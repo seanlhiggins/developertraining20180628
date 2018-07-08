@@ -65,6 +65,12 @@ view: order_items {
     sql: ${TABLE}.sale_price ;;
   }
 
+  dimension: profit {
+    type: number
+    sql: ${sale_price} - ${inventory_items.cost} ;;
+  }
+
+
   dimension_group: shipped {
     type: time
     timeframes: [
@@ -83,6 +89,14 @@ view: order_items {
     type: string
     sql: ${TABLE}.status ;;
   }
+  measure: order_count {
+    type: count_distinct
+    drill_fields: [created_month, users.age_tier, total_revenue]
+    link: {
+      label: "Dashboard"
+      url: "/dashboards/694?State={{ _filters['users.state'] | url_encode }}"}
+    sql: ${order_id} ;;
+  }
 
   dimension: user_id {
     type: number
@@ -90,11 +104,26 @@ view: order_items {
     sql: ${TABLE}.user_id ;;
   }
 
+  measure: total_revenue {
+    type: sum
+    sql: ${sale_price} ;;
+    value_format_name: usd_0
+  }
+
+  measure: average_sale_price {
+    type: average
+    sql: ${sale_price} ;;
+  }
+
   measure: count {
     type: count
     drill_fields: [detail*]
   }
 
+  measure: total_profit {
+    sql: ${profit} ;;
+    type: sum
+  }
   # ----- Sets of fields for drilling ------
   set: detail {
     fields: [
